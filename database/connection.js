@@ -4,6 +4,8 @@ import config from '@/config'
 let connectionCounter = 0
 
 export default function connectDatabase(callback) {
+    console.log('config.MONGO_URI: ', config.MONGO_URI)
+
     mongoose
         .connect(config.MONGO_URI)
         .then(() => {
