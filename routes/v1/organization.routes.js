@@ -4,6 +4,6 @@ import { userAuthenticate as userAuth } from '@/security/passport'
 
 const router = express.Router()
 
-router.route('/user-info').get(userAuth, controller.v1.user.userInfo)
+router.route('/doctors-list').get(userAuth, controller.v1.organization.doctorList)
 
 export default router

@@ -3,6 +3,16 @@ import * as enums from '@/constants/enums'
 
 const UserSchema = new mongoose.Schema(
     {
+        organizationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'organization',
+            default: null,
+        },
+        addedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'users',
+            default: null,
+        },
         name: {
             type: String,
             trim: true,
@@ -27,6 +37,11 @@ const UserSchema = new mongoose.Schema(
         isEmailVerified: {
             type: Boolean,
             default: false,
+        },
+        status: {
+            type: String,
+            enum: Object.values(enums.STATUS),
+            default: enums.STATUS.PENDING,
         },
     },
     { timestamps: true },

@@ -56,6 +56,9 @@ export const sendEmailViaTemplate = async ({ identifier, to, content, bcc }) => 
             case enums.EMAIL_CATEGORIES.OTP_TEMPLATE:
                 mailContent['template'] = mailContent['template'].replaceAll('##OTP##', content.otp)
                 break
+            case enums.EMAIL_CATEGORIES.SEND_LINK_TEMPLATE:
+                mailContent['template'] = mailContent['template'].replaceAll('##LINK##', content.link)
+                break
             default:
                 break
         }

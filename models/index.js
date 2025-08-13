@@ -3,5 +3,6 @@ import Security from './Security'
 import EmailTemplates from './EmailTemplates'
 import Organization from './Organization'
 import Token from './Token'
+import DoctorInfo from './DoctorInfo'
 
-export { User, Security, EmailTemplates, Organization, Token }
+export { User, Security, EmailTemplates, Organization, Token, DoctorInfo }

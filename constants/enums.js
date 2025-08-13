@@ -4,4 +4,6 @@ export const ROLES = { DOCTOR: 'doctor', ORG_ADMIN: 'org_admin', USER: 'user' }
 export const SECURITY_TYPES = { ACTIVATION_MAIL: 'activation_mail' }
 export const SECURITY_MODES = { EMAIL: 'email', SMS: 'sms' }
 export const EMAIL_TEMPLATE_STATUS = { ACTIVE: 'active', INACTIVE: 'inactive' }
-export const EMAIL_CATEGORIES = { OTP_TEMPLATE: 'OTP_TEMPLATE' }
+export const EMAIL_CATEGORIES = { OTP_TEMPLATE: 'OTP_TEMPLATE', SEND_LINK_TEMPLATE: 'SEND_LINK_TEMPLATE' }
+export const STATUS = { ACTIVE: 'active', PENDING: 'pending', INACTIVE: 'inactive', BLOCKED: 'blocked', DELETED: 'deleted' }
+export const OTP_SESSIONS = { EMAIL_OTP: 'email_otp_session', EMAIL_OTP_ADD_DOC: 'email_otp_add_doc_session' }

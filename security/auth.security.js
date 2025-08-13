@@ -9,10 +9,10 @@ import { sendEmailViaTemplate } from '@/controllers/utility/mail.controller'
 import { compareString, hashString } from './security'
 import { Security } from '@/models'
 
-export const sendOtp = async (user, res, cookies, identifier, subject = '', type, mode, otpCount) => {
+export const sendOtp = async (user, res, cookies, identifier, subject = '', type, mode, session, otpCount) => {
     try {
-        if (!isEmpty(cookies.email_otp_session)) {
-            res.clearCookie('email_otp_session')
+        if (!isEmpty(cookies[session])) {
+            res.clearCookie(session)
         }
 
         const otp = generateOTP()
@@ -61,7 +61,7 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
             return { status: false, message: 'Something went wrong' }
         }
 
-        const token = encryptString(JSON.stringify({ _id: user._id, email: user.email, type: type, mode: mode }))
+        const token = encryptString(JSON.stringify({ _id: user._id, email: user.email, type: type, mode: mode, session: session }))
 
         const cookieConfig = {
             httpOnly: true,
@@ -72,7 +72,7 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-        res.cookie('email_otp_session', otpHash, cookieConfig)
+        res.cookie(session, otpHash, cookieConfig)
 
         return { status: true, token: token }
     } catch (error) {
@@ -81,11 +81,12 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
     }
 }
 
-export const verifyOtp = async (user, res, cookies, otp, type, mode) => {
+export const verifyOtp = async (user, res, cookies, otp, type, mode, session) => {
+    console.log('session: ', session)
     console.log('mode: ', mode)
     console.log('type: ', type)
     try {
-        if (isEmpty(cookies.email_otp_session)) {
+        if (isEmpty(cookies[session])) {
             return { status: false, message: 'Invalid cookie session' }
         }
 
@@ -96,7 +97,7 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode) => {
             return { status: false, message: 'Otp verification failed, retry with new OTP' }
         }
 
-        if (!(await compareString(securityData.secret, cookies.email_otp_session))) {
+        if (!(await compareString(securityData.secret, cookies[session]))) {
             return { status: false, message: 'Invalid session' }
         }
 
@@ -145,7 +146,7 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode) => {
             console.log('updateSecurity: ', updateSecurity)
             return { status: false, message: 'Something went wrong' }
         }
-        res.clearCookie('email_otp_session')
+        res.clearCookie(session)
 
         return { status: true }
     } catch (error) {
