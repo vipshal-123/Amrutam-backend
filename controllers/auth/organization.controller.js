@@ -142,13 +142,6 @@ export const createOrgVerifyOtp = async (req, res) => {
             return res.status(400).json({ success: false, message })
         }
 
-        const updateUser = await User.updateOne({ _id: decryptToken._id }, { $set: { isEmailVerified: true, status: enums.STATUS.ACTIVE } }).lean()
-
-        if (updateUser.modifiedCount === 0) {
-            console.log('updateUser.modifiedCount: ', updateUser)
-            return res.status(500).json({ success: false, message: 'Something went wrong' })
-        }
-
         const payload = {
             createdBy: decryptToken._id,
             name: body.name,
@@ -168,6 +161,16 @@ export const createOrgVerifyOtp = async (req, res) => {
 
         if (isEmpty(createOrg)) {
             console.log('createOrg: ', createOrg)
+            return res.status(500).json({ success: false, message: 'Something went wrong' })
+        }
+
+        const updateUser = await User.updateOne(
+            { _id: decryptToken._id },
+            { $set: { isEmailVerified: true, status: enums.STATUS.ACTIVE, organizationId: createOrg._id } },
+        ).lean()
+
+        if (updateUser.modifiedCount === 0) {
+            console.log('updateUser.modifiedCount: ', updateUser)
             return res.status(500).json({ success: false, message: 'Something went wrong' })
         }
 
@@ -274,7 +277,7 @@ export const addDoctors = async (req, res) => {
             to: body.email,
             content: {
                 subject: 'User verification link',
-                link: `${config.FRONTEND_USER}/create-password?token=${token}`,
+                link: `${config.FRONTEND_USER}/doc-create-password?token=${token}`,
                 email: body.email,
             },
         }
@@ -299,7 +302,7 @@ export const addDoctors = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Something went wrong' })
         }
 
-        return res.status(200).json({ success: true, message: 'Doctor added successfully, check mail for the login link' })
+        return res.status(200).json({ success: true, message: 'Doctor added successfully, check mail for the login link', _id: createDoctorInfo._id })
     } catch (error) {
         console.error('error: ', error)
         return res.status(500).json({ success: false, message: 'Something went wrong' })
@@ -325,13 +328,13 @@ export const resendAddDoctorsMail = async (req, res) => {
             to: body.email,
             content: {
                 subject: 'User verification link',
-                link: `${config.FRONTEND_USER}/create-password?token=${token}`,
+                link: `${config.FRONTEND_USER}/doc-create-password?token=${token}`,
                 email: body.email,
             },
         }
 
         const createSecurity = await Security.updateOne(
-            { type: enums.SECURITY_TYPES.ACTIVATION_MAIL, userId: body._id },
+            { type: enums.SECURITY_TYPES.ACTIVATION_MAIL, userId: findUser._id },
             {
                 $set: {
                     value: token,
@@ -339,9 +342,9 @@ export const resendAddDoctorsMail = async (req, res) => {
                     expiresAt: moment().add(1, 'day'),
                 },
             },
-        )
+        ).lean()
 
-        if (isEmpty(createSecurity)) {
+        if (createSecurity.modifiedCount === 0) {
             console.log('createSecurity: ', createSecurity)
             return res.status(500).json({ success: false, message: 'Something went wrong' })
         }

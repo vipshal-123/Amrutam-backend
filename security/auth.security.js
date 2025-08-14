@@ -90,9 +90,19 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode, session) =>
             return { status: false, message: 'Invalid cookie session' }
         }
 
+        if (isEmpty(otp)) {
+            return { status: false, message: 'Otp is required' }
+        }
+
         const securityData = await Security.findOne({ userId: user._id, type: type, mode: mode }).lean()
+        console.log('securityData: ', securityData)
 
         if (isEmpty(securityData)) {
+            console.log('securityData: ', securityData)
+            return { status: false, message: 'Otp verification failed, retry with new OTP' }
+        }
+
+        if (isEmpty(securityData?.secret)) {
             console.log('securityData: ', securityData)
             return { status: false, message: 'Otp verification failed, retry with new OTP' }
         }
