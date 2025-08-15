@@ -43,6 +43,22 @@ export const doctorList = async (req, res) => {
                     from: 'doctorInfo',
                     localField: '_id',
                     foreignField: 'userId',
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: 'specialization',
+                                localField: 'specialization',
+                                foreignField: '_id',
+                                as: 'specialization',
+                            },
+                        },
+                        {
+                            $unwind: {
+                                path: '$specialization',
+                                preserveNullAndEmptyArrays: true,
+                            },
+                        },
+                    ],
                     as: 'doctorInfo',
                 },
             },
@@ -57,7 +73,7 @@ export const doctorList = async (req, res) => {
                     _id: 1,
                     name: 1,
                     email: 1,
-                    specialization: '$doctorInfo.specialization',
+                    specialization: '$doctorInfo.specialization.title',
                     experience: '$doctorInfo.experience',
                     mode: '$doctorInfo.availability',
                     bio: '$doctorInfo.bio',
@@ -68,7 +84,6 @@ export const doctorList = async (req, res) => {
         ]
 
         const findDoctors = await User.aggregate(aggregationQuery)
-        console.log('findDoctors: ', findDoctors)
 
         if (isEmpty(findDoctors)) {
             return res.status(200).json({ success: true, data: [], next: '' })

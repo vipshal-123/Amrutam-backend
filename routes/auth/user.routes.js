@@ -9,4 +9,6 @@ router.route('/create-password').post(controller.auth.user.createPassword)
 router.route('/resend-otp').post(controller.auth.user.resendOtp)
 router.route('/signin').post(controller.auth.user.signin)
 
+router.route('/signin-with-google').post(controller.auth.user.signinWithGoogle)
+
 export default router

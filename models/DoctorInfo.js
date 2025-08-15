@@ -13,8 +13,8 @@ const DoctorInfoSchema = new mongoose.Schema(
             required: true,
         },
         specialization: {
-            type: String,
-            trim: true,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'specialization',
             required: true,
         },
         experience: {

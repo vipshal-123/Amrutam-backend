@@ -6,5 +6,6 @@ import Token from './Token'
 import DoctorInfo from './DoctorInfo'
 import DocAvailability from './DocAvailability'
 import BookedSlot from './BookedSlots'
+import Specialization from './Specialization'
 
-export { User, Security, EmailTemplates, Organization, Token, DoctorInfo, DocAvailability, BookedSlot }
+export { User, Security, EmailTemplates, Organization, Token, DoctorInfo, DocAvailability, BookedSlot, Specialization }

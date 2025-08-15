@@ -184,6 +184,22 @@ export const createPassword = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Access denied' })
         }
 
+        const findSecurity = await Security.findOne({ userId: userData._id }).select('_id').lean()
+
+        if (isEmpty(findSecurity)) {
+            const secPayload = {
+                userId: userData._id,
+                type: enums.SECURITY_TYPES.ACTIVATION_MAIL,
+            }
+
+            const createSecurity = await Security.create(secPayload)
+
+            if (isEmpty(createSecurity)) {
+                console.log('createSecurity: ', createSecurity);
+                return res.status(500).json({ success: false, message: 'Something went wrong' })
+            }
+        }
+
         const hashPassword = await generatePassword(body?.password)
 
         if (isEmpty(hashPassword)) {
@@ -191,7 +207,10 @@ export const createPassword = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Something went wrong' })
         }
 
-        const updateUser = await User.updateOne({ _id: userData._id }, { $set: { password: hashPassword, status: enums.STATUS.ACTIVE } }).lean()
+        const updateUser = await User.updateOne(
+            { _id: userData._id },
+            { $set: { password: hashPassword, status: enums.STATUS.ACTIVE, isEmailVerified: true } },
+        ).lean()
 
         if (updateUser.modifiedCount === 0) {
             console.log('updateUser: ', updateUser)
@@ -233,7 +252,7 @@ export const createPassword = async (req, res) => {
         res.cookie('refreshToken', refreshToken, cookieConfig)
         res.clearCookie('create_password_token')
 
-        return res.status(200).json({ success: true, message: 'Password created successfully', mode: 'HOME' })
+        return res.status(200).json({ success: true, message: 'Password created successfully', mode: 'HOME', accessToken })
     } catch (error) {
         console.log(error)
         return res.status(500).json({ success: false, message: 'Something went wrong' })
@@ -288,21 +307,14 @@ export const signin = async (req, res) => {
 
         // Add tokensInfo to redis
 
-        const cookieConfig = body.isRemember
-            ? {
-                  maxAge: ms(config.REFRESH_TOKEN_EXPIRATION),
-                  httpOnly: true,
-                  sameSite: 'none',
-                  secure: true,
-                  expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
-                  partitioned: true,
-              }
-            : {
-                  httpOnly: true,
-                  sameSite: 'none',
-                  secure: true,
-                  partitioned: true,
-              }
+        const cookieConfig = {
+            maxAge: ms(config.REFRESH_TOKEN_EXPIRATION),
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+            expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
+            partitioned: true,
+        }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
@@ -311,6 +323,95 @@ export const signin = async (req, res) => {
         return res.status(201).json({ success: true, message: 'Signed-In successfully', sessionId, accessToken, role: enums.ROLES.USER })
     } catch (error) {
         console.error('signin', error)
+        return res.status(500).json({ success: false, message: 'Something went wrong' })
+    }
+}
+
+export const signinWithGoogle = async (req, res) => {
+    try {
+        const { body, cookies } = req
+
+        if (!isEmpty(cookies.create_password_token)) {
+            res.clearCookie('create_password_token')
+        }
+
+        if (isEmpty(body.token)) {
+            return res.status(404).json({ success: false, message: 'Token not found' })
+        }
+
+        const response = await config.GoogleClient.verifyIdToken({
+            idToken: body.token,
+            audience: config.GOOGLE_CLIENT_ID,
+        })
+
+        const payload = response.getPayload()
+        console.log('payload: ', payload)
+
+        if (isEmpty(payload)) {
+            return res.status(400).json({ success: false, message: 'Invalid token, Failed to fetch data from google' })
+        }
+
+        const user = await User.findOne({ email: payload.email }).select('_id email').lean()
+
+        if (isEmpty(user)) {
+            const userPayload = {
+                email: payload.email,
+                name: payload.name,
+                role: enums.ROLES.USER,
+            }
+
+            const createUser = await User.create(userPayload)
+
+            if (isEmpty(createUser)) {
+                return res.status(500).json({ success: false, message: 'Something went wrong' })
+            }
+
+            const cookieData = encryptString(JSON.stringify({ _id: createUser._id }))
+
+            const cookieConfig = {
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true,
+                partitioned: true,
+            }
+
+            res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
+            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+            res.cookie('create_password_token', cookieData, cookieConfig)
+
+            return res.status(200).json({ success: true, message: 'User signin successfully', mode: 'CREATE_PASSWORD' })
+        }
+
+        const sessionId = uuid()
+
+        const accessToken = generateJWTToken({ sessionId: sessionId, _id: user._id, role: enums.ROLES.USER, organizationId: null }, false)
+        const refreshToken = generateJWTToken({ sessionId: sessionId, _id: user._id, role: enums.ROLES.USER, organizationId: null }, true)
+
+        await Token.create({
+            userId: user._id,
+            role: enums.ROLES.USER,
+            sessionId,
+            accessToken,
+            refreshToken,
+            expiresAt: new Date(Date.now() + ms(config.REFRESH_TOKEN_EXPIRATION)),
+        })
+
+        const cookieConfig = {
+            maxAge: ms(config.REFRESH_TOKEN_EXPIRATION),
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+            expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
+            partitioned: true,
+        }
+
+        res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+        res.cookie('refreshToken', refreshToken, cookieConfig)
+
+        return res.status(200).json({ success: true, message: 'User signin successfully', mode: 'HOME', accessToken })
+    } catch (error) {
+        console.error('error: ', error)
         return res.status(500).json({ success: false, message: 'Something went wrong' })
     }
 }

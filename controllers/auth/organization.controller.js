@@ -1,6 +1,6 @@
 import isEmpty from 'is-empty'
 import * as enums from '@/constants/enums'
-import { DoctorInfo, Organization, Security, Token, User } from '@/models'
+import { DoctorInfo, Organization, Security, Specialization, Token, User } from '@/models'
 import { sendOtp, verifyOtp } from '@/security/auth.security'
 import { decryptString } from '@/security/crypto'
 import { v4 as uuid } from 'uuid'
@@ -268,6 +268,8 @@ export const addDoctors = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Something went wrong' })
         }
 
+        const findSpec = await Specialization.findById(body?.specialization).select('title').lean()
+
         const token = uuid()
 
         const hash = await hashString(token)
@@ -302,7 +304,12 @@ export const addDoctors = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Something went wrong' })
         }
 
-        return res.status(200).json({ success: true, message: 'Doctor added successfully, check mail for the login link', _id: createDoctorInfo._id })
+        return res.status(200).json({
+            success: true,
+            message: 'Doctor added successfully, check mail for the login link',
+            _id: createDoctorInfo._id,
+            specialization: findSpec?.title || '',
+        })
     } catch (error) {
         console.error('error: ', error)
         return res.status(500).json({ success: false, message: 'Something went wrong' })

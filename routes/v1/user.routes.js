@@ -13,4 +13,12 @@ router.route('/booking/:id').get(userAuth, controller.v1.user.getBookingSlots)
 router.route('/booking-send-otp').post(userAuth, controller.v1.user.slotBookingSendOtp)
 router.route('/booking-verify-otp').post(userAuth, controller.v1.user.slotBookingVerifyOtp)
 
+router.route('/booking-release-lock').post(userAuth, controller.v1.user.releaseLock)
+
+router.route('/booking').get(userAuth, controller.v1.user.bookings)
+router.route('/booking-reschedule').post(userAuth, controller.v1.user.rescheduleSlot)
+router.route('/booking-cancel').post(userAuth, controller.v1.user.cancelSlot)
+
+router.route('/doc-specialization').get(userAuth, controller.v1.user.getSpecialization)
+
 export default router
