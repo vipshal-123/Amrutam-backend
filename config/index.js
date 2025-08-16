@@ -13,7 +13,7 @@ const config = {
     API_HOST: process.env.API_HOST,
 
     // Frontend post
-    FRONTEND_USER: 'https://vipshal-123.github.io',
+    FRONTEND_USER: 'https://amrutam-frontend.onrender.com',
 
     // MAIL INFO
     SMTP_MAIL: process.env.MAIL,
