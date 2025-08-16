@@ -53,7 +53,7 @@ const config = {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_REDIRECT_URI: process.env.FRONTEND_USER,
-    GoogleClient: new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.FRONTEND_USER),
+    GoogleClient: new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, 'https://vipshal-123.github.io'),
 
     // S3 Keys
     RATINGS_IMAGES: 'ratings',
