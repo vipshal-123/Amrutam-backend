@@ -200,7 +200,6 @@ export const createOrgVerifyOtp = async (req, res) => {
             httpOnly: true,
             sameSite: 'none',
             secure: true,
-            partitioned: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
         }
 
@@ -497,13 +496,11 @@ export const doctorSignin = async (req, res) => {
                   sameSite: 'none',
                   secure: true,
                   expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
-                  partitioned: true,
               }
             : {
                   httpOnly: true,
                   sameSite: 'none',
                   secure: true,
-                  partitioned: true,
               }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -615,7 +612,6 @@ export const orgAdminVerifyOtp = async (req, res) => {
             httpOnly: true,
             sameSite: 'none',
             secure: true,
-            partitioned: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
         }
 

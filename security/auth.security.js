@@ -67,7 +67,6 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
             httpOnly: true,
             sameSite: 'none',
             secure: true,
-            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
