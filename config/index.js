@@ -7,7 +7,7 @@ const config = {
     MONGO_URI: process.env.MONGO_URI,
 
     // CORS origins
-    CORS_ORIGIN: ['http://localhost:3000', 'https://vipshal-123.github.io'],
+    CORS_ORIGIN: ['http://localhost:3000', 'https://vipshal-123.github.io', 'https://amrutam-frontend.onrender.com'],
 
     // API Hosts
     API_HOST: process.env.API_HOST,
