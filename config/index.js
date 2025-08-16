@@ -11,10 +11,9 @@ const config = {
 
     // API Hosts
     API_HOST: process.env.API_HOST,
-    ADMIN_HOST: process.env.ADMIN_HOST,
 
     // Frontend post
-    FRONTEND_USER: process.env.FRONTEND_USER,
+    FRONTEND_USER: 'https://vipshal-123.github.io',
 
     // MAIL INFO
     SMTP_MAIL: process.env.MAIL,
