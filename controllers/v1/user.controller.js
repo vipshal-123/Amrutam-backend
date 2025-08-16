@@ -783,3 +783,86 @@ export const getSpecialization = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Something went wrong' })
     }
 }
+
+export const patientList = async (req, res) => {
+    try {
+        const { user, query } = req
+        let dbQuery = { doctorId: new mongoose.Types.ObjectId(user._id), status: enums.BOOKING_STATUS.BOOKED }
+
+        if (!isEmpty(query?.next)) {
+            const decodeData = JSON.parse(Buffer.from(query.next, 'base64').toString('utf-8'))
+            dbQuery = { ...dbQuery, _id: { $lt: decodeData._id } }
+        }
+
+        const aggregationQuery = [
+            {
+                $match: dbQuery,
+            },
+            {
+                $sort: {
+                    _id: -1,
+                },
+            },
+            {
+                $limit: parseInt(query?.next) || 10,
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$user',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'docAvailability',
+                    localField: 'slotId',
+                    foreignField: '_id',
+                    as: 'docAvailability',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$docAvailability',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    status: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    userId: 1,
+                    doctorId: 1,
+                    name: '$user.name',
+                    email: '$user.email',
+                    date: '$docAvailability.date',
+                    start: '$docAvailability.start',
+                    end: '$docAvailability.end',
+                },
+            },
+        ]
+
+        const patientData = await BookedSlot.aggregate(aggregationQuery)
+
+        if (isEmpty(patientData)) {
+            return res.status(200).json({ success: true, data: [], next: '' })
+        }
+
+        const lastData = patientData[patientData.length - 1]._id
+        const encodeData = Buffer.from(JSON.stringify({ _id: lastData }), 'utf-8').toString('base64')
+
+        return res.status(200).json({ success: true, data: patientData, next: encodeData })
+    } catch (error) {
+        console.error('error: ', error)
+        return res.status(500).json({ success: false, message: 'Something went wrong' })
+    }
+}

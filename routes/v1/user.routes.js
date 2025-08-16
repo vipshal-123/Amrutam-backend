@@ -21,4 +21,6 @@ router.route('/booking-cancel').post(userAuth, controller.v1.user.cancelSlot)
 
 router.route('/doc-specialization').get(userAuth, controller.v1.user.getSpecialization)
 
+router.route('/patient-list').get(userAuth, controller.v1.user.patientList)
+
 export default router
