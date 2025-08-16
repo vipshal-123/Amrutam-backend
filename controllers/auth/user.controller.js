@@ -146,6 +146,7 @@ export const verifySignupOtp = async (req, res) => {
             httpOnly: true,
             sameSite: 'none',
             secure: true,
+            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -243,6 +244,7 @@ export const createPassword = async (req, res) => {
             sameSite: 'none',
             secure: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
+            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -311,6 +313,7 @@ export const signin = async (req, res) => {
             sameSite: 'none',
             secure: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
+            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -383,6 +386,7 @@ export const signinWithGoogle = async (req, res) => {
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
+                partitioned: true,
             }
 
             res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -412,6 +416,7 @@ export const signinWithGoogle = async (req, res) => {
             sameSite: 'none',
             secure: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
+            partitioned: true
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
