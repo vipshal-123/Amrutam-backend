@@ -146,7 +146,6 @@ export const verifySignupOtp = async (req, res) => {
             httpOnly: true,
             sameSite: 'none',
             secure: true,
-            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -195,7 +194,7 @@ export const createPassword = async (req, res) => {
             const createSecurity = await Security.create(secPayload)
 
             if (isEmpty(createSecurity)) {
-                console.log('createSecurity: ', createSecurity);
+                console.log('createSecurity: ', createSecurity)
                 return res.status(500).json({ success: false, message: 'Something went wrong' })
             }
         }
@@ -243,7 +242,6 @@ export const createPassword = async (req, res) => {
             httpOnly: true,
             sameSite: 'none',
             secure: true,
-            partitioned: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
         }
 
@@ -313,7 +311,6 @@ export const signin = async (req, res) => {
             sameSite: 'none',
             secure: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
-            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -351,7 +348,21 @@ export const signinWithGoogle = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid token, Failed to fetch data from google' })
         }
 
-        const user = await User.findOne({ email: payload.email }).select('_id email').lean()
+        const user = await User.findOne({ email: payload.email, role: enums.ROLES.USER }).lean()
+
+        if (isEmpty(user)) {
+            return res.status(400).json({ success: false, message: 'No user exists with this email' })
+        }
+
+        if (!user.isEmailVerified) {
+            return res.status(400).json({ success: false, message: 'E-mail was not verified, please signUp to continue', mode: 'SIGNUP' })
+        }
+
+        if (user.status === enums.STATUS.BLOCKED || user.status === enums.STATUS.INACTIVE) {
+            return res
+                .status(400)
+                .json({ success: false, message: `Sorry, your account has been ${user.status.toLowerCase()}, please contact your Admin` })
+        }
 
         if (isEmpty(user)) {
             const userPayload = {
@@ -372,7 +383,6 @@ export const signinWithGoogle = async (req, res) => {
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
-                partitioned: true,
             }
 
             res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -402,7 +412,6 @@ export const signinWithGoogle = async (req, res) => {
             sameSite: 'none',
             secure: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
-            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
