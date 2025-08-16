@@ -67,6 +67,7 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
             httpOnly: true,
             sameSite: 'none',
             secure: true,
+            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
@@ -85,6 +86,7 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode, session) =>
     console.log('mode: ', mode)
     console.log('type: ', type)
     try {
+        res.clearCookie(session)
         if (isEmpty(cookies[session])) {
             return { status: false, message: 'Invalid cookie session' }
         }
