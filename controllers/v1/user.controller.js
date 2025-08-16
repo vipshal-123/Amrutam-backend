@@ -151,6 +151,9 @@ export const singleDoctor = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Access denied' })
         }
 
+        const findIds = await BookedSlot.find({ userId: user._id }).distinct('slotId').lean()
+        console.log('findIds: ', findIds)
+
         const aggregationQuery = [
             {
                 $match: {
@@ -192,6 +195,36 @@ export const singleDoctor = async (req, res) => {
                     from: 'docAvailability',
                     localField: '_id',
                     foreignField: 'doctorId',
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                {
+                                                    $in: ['$_id', findIds],
+                                                },
+                                                { $eq: ['$isLocked', true] },
+                                            ],
+                                        },
+                                        {
+                                            $and: [
+                                                {
+                                                    $not: [
+                                                        {
+                                                            $in: ['$_id', findIds],
+                                                        },
+                                                    ],
+                                                },
+                                                { $eq: ['$isLocked', false] },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
                     as: 'docAvailability',
                 },
             },
