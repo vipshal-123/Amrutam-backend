@@ -18,7 +18,7 @@ const app = express()
 
 app.use(
     cors({
-        origin: [config.CORS_ORIGIN, config.ADMIN_HOST],
+        origin: config.CORS_ORIGIN,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     }),
