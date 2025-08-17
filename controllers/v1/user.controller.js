@@ -144,7 +144,7 @@ export const doctorList = async (req, res) => {
 
 export const singleDoctor = async (req, res) => {
     try {
-        const { user, params } = req
+        const { user, params, query } = req
         console.log('user: ', user)
 
         if (user.role !== enums.ROLES.USER) {
@@ -153,6 +153,16 @@ export const singleDoctor = async (req, res) => {
 
         const findIds = await BookedSlot.find({ userId: user._id }).distinct('slotId').lean()
         console.log('findIds: ', findIds)
+
+        let rescheduleFilter = {}
+
+        if (!isEmpty(query?.rescheduleDate)) {
+            rescheduleFilter = {
+                $eq: ['$start', new Date(query.rescheduleDate)],
+            }
+        }
+
+        console.log('rescheduleFilter: ', rescheduleFilter)
 
         const aggregationQuery = [
             {
@@ -203,13 +213,36 @@ export const singleDoctor = async (req, res) => {
                                         {
                                             $and: [
                                                 {
+                                                    $gt: [
+                                                        {
+                                                            $dateToString: {
+                                                                format: '%Y-%m-%d',
+                                                                date: '$date',
+                                                            },
+                                                        },
+                                                        moment().format('YYYY-MM-DD'),
+                                                    ],
+                                                },
+                                                {
                                                     $in: ['$_id', findIds],
                                                 },
                                                 { $eq: ['$isLocked', true] },
+                                                rescheduleFilter,
                                             ],
                                         },
                                         {
                                             $and: [
+                                                {
+                                                    $gt: [
+                                                        {
+                                                            $dateToString: {
+                                                                format: '%Y-%m-%d',
+                                                                date: '$date',
+                                                            },
+                                                        },
+                                                        moment().format('YYYY-MM-DD'),
+                                                    ],
+                                                },
                                                 {
                                                     $not: [
                                                         {
