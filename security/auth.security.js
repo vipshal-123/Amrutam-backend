@@ -86,7 +86,6 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode, session) =>
     console.log('mode: ', mode)
     console.log('type: ', type)
     try {
-        res.clearCookie(session)
         if (isEmpty(cookies[session])) {
             return { status: false, message: 'Invalid cookie session' }
         }
@@ -108,6 +107,7 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode, session) =>
             return { status: false, message: 'Otp verification failed, retry with new OTP' }
         }
         console.log('cookies[session]: ', cookies[session])
+        console.log('await compareString(securityData.secret, cookies[session]): ', await compareString(securityData.secret, cookies[session]))
 
         if (!(await compareString(securityData.secret, cookies[session]))) {
             return { status: false, message: 'Invalid session' }
