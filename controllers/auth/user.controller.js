@@ -353,15 +353,11 @@ export const signinWithGoogle = async (req, res) => {
 
         const user = await User.findOne({ email: payload.email, role: enums.ROLES.USER }).lean()
 
-        if (isEmpty(user)) {
-            return res.status(400).json({ success: false, message: 'No user exists with this email' })
-        }
-
-        if (!user.isEmailVerified) {
+        if (!isEmpty(user) && !user.isEmailVerified) {
             return res.status(400).json({ success: false, message: 'E-mail was not verified, please signUp to continue', mode: 'SIGNUP' })
         }
 
-        if (user.status === enums.STATUS.BLOCKED || user.status === enums.STATUS.INACTIVE) {
+        if ((!isEmpty(user) && user.status === enums.STATUS.BLOCKED) || user.status === enums.STATUS.INACTIVE) {
             return res
                 .status(400)
                 .json({ success: false, message: `Sorry, your account has been ${user.status.toLowerCase()}, please contact your Admin` })
@@ -416,7 +412,7 @@ export const signinWithGoogle = async (req, res) => {
             sameSite: 'none',
             secure: true,
             expiresIn: ms(config.REFRESH_TOKEN_EXPIRATION),
-            partitioned: true
+            partitioned: true,
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
