@@ -73,6 +73,7 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
         res.cookie(session, otpHash, cookieConfig)
+        console.log('otpHash: ', otpHash);
 
         return { status: true, token: token }
     } catch (error) {
