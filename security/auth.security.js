@@ -68,12 +68,13 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
             sameSite: 'none',
             secure: true,
             partitioned: true,
+            path: '/',
         }
 
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-        res.cookie(session, otpHash, cookieConfig)
-        console.log('otpHash: ', otpHash);
+        res.cookie(session, encodeURIComponent(otpHash), cookieConfig)
+        console.log('otpHash: ', otpHash)
 
         return { status: true, token: token }
     } catch (error) {
@@ -110,7 +111,7 @@ export const verifyOtp = async (user, res, cookies, otp, type, mode, session) =>
         console.log('cookies[session]: ', cookies[session])
         console.log('await compareString(securityData.secret, cookies[session]): ', await compareString(securityData.secret, cookies[session]))
 
-        if (!(await compareString(securityData.secret, cookies[session]))) {
+        if (!(await compareString(securityData.secret, decodeURIComponent(cookies[session])))) {
             return { status: false, message: 'Invalid session' }
         }
 
