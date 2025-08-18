@@ -11,10 +11,6 @@ import { Security } from '@/models'
 
 export const sendOtp = async (user, res, cookies, identifier, subject = '', type, mode, session, otpCount) => {
     try {
-        if (!isEmpty(cookies[session])) {
-            res.clearCookie(session)
-        }
-
         const otp = generateOTP()
         console.log('otp: ', otp)
         const otpExpiry = new Date(Date.now() + ms('10min'))
@@ -71,6 +67,7 @@ export const sendOtp = async (user, res, cookies, identifier, subject = '', type
             path: '/',
         }
 
+        res.clearCookie(session)
         res.header('Access-Control-Allow-Origin', config.FRONTEND_USER)
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
         res.cookie(session, encodeURIComponent(otpHash), cookieConfig)
